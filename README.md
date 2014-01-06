@@ -17,7 +17,6 @@ https://github.com/TheThingSystem/steward/issues/100
 
 ### Get a token
 
-
   var SamsungAirconditionerAuthenticator = require('./samsung-airconditioner-authenticator');
 
 
@@ -27,6 +26,10 @@ https://github.com/TheThingSystem/steward/issues/100
 
   auth.socket.on('physicallyAuthenticating', function() {
     console.log("Please physically power on your air conditioner within the next 30 seconds");
+  });
+
+  auth.socket.on('failedAuthentication', function() {
+    console.log("Too slow!");
   });
 
   auth.socket.on('authenticated', function(token) {
