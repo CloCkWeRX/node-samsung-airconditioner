@@ -19,4 +19,7 @@
     "node"         : ">=0.8"
   }
 , "readmeFilename" : "README.md"
+, "dependencies": {
+    "carrier": ">= 0.1.0"
+  }
 }
