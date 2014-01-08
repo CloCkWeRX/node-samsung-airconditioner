@@ -11,48 +11,47 @@ Install
 API
 ---
 
-### SSDP
+### Load
 
-https://github.com/TheThingSystem/steward/issues/100
-
-### Get a token
+    var API = require('samsung-airconditioner').API;
 
 
-    var SamsungAirconditionerAuthenticator = require('./samsung-airconditioner-authenticator');
+### Discover
 
-
-    var auth = new SamsungAirconditionerAuthenticator({
-      ip: '192.168.1.15' 
+    new API().on('discover', function(aircon) {
+      // now login!
+    }).on('error', function(err) {
+      console.log('discovery error: ' + err.message);
     });
 
-    auth.socket.on('physicallyAuthenticating', function() {
-      console.log("Please physically power on your air conditioner within the next 30 seconds");
-    });
+### Login
 
-    auth.socket.on('failedAuthentication', function() {
-      console.log("Too slow!");
-    });
+      // if the caller already has a token associated with aircon.props.duid, then supply it, else null
 
-    auth.socket.on('authenticated', function(token) {
-      console.log("Your token is: " + token);
-    });
+      aircon.login(token, function(err, token) {
+        if (!!err) return console.log('login error: ' + err.message);
 
-    auth.socket.on('end', function() {
-      console.log("Bye");
-    });
+        // remember token for next time!
 
+        // now drive the aircon!
+      }).on('waiting', function() {
+        console.log('please power on the device within the next 30 seconds');
+      }).on('end', function() {
+        console.log('aircon disconnected');
+      }).on('err', function(err) {
+        console.log('aircon error: ' + err.message);
+      });
 
-#### Drive the aircon
+#### Drive the aircon after logging in
 
-    var aircon = new SamsungAirconditioner({
-      ip: '192.168.1.15',
-      token: '98854465-6273-M559-N887-373832354144',
-      duid: '7825AD103D06'
-    })
-    aircon.socket.on('loggedIn', function() {
-      aircon.on();
+    aircon.onoff(true);
 
-      setTimeout(function () {
-        aircon.off();
-      }, 10000);
-    });
+    aircon.mode(type);                   // one of 'auto', 'cool', 'dry', 'wind', or 'heat'
+
+    aircon.set_temperature(celcius);
+    aircon.get_temperature(function(err, celcius) {});
+
+    aircon.set_convenient_mode(mode);    // one of 'off', 'quiet', 'sleep', 'smart', 'softcool', 'turbomode',
+                                         // 'windmode1', 'windmode2', 'windmode3'
+
+    aircon.sleep_mode(hours);
