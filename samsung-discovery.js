@@ -3,7 +3,7 @@ var Emitter        = require('events').EventEmitter
   , util           = require('util')
   , SSDP           = require('node-ssdp')
   , netmask        = require('netmask')
-  , Device         = require('samsung-airconditioner')
+  , Device         = require('./samsung-airconditioner')
   ;
 
 
@@ -22,9 +22,9 @@ var SamsungDiscovery = function(options) {
 
   if (!(self instanceof SamsungDiscovery)) return new SamsungDiscovery(options);
 
-  self.options = options;
+  self.options = options || {};
 
-  self.logger = self.options.logger  || {};
+  self.logger = self.options.logger || {};
   for (k in DEFAULT_LOGGER) {
     if ((DEFAULT_LOGGER.hasOwnProperty(k)) && (typeof self.logger[k] === 'undefined'))  self.logger[k] = DEFAULT_LOGGER[k];
   }
@@ -74,18 +74,20 @@ SamsungDiscovery.prototype.listen = function(ifname, ipaddr, portno) {
     }
 
     mac = info.MAC_ADDR;
-    self.devices[mac] = new Device({ logger : self.options.logger
+    self.devices[mac] = new Device({ logger : self.logger
                                    , ip     : rinfo.address
                                    , duid   : mac
                                    , info   : info
                                    });
     self.emit('discover', self.devices[mac]);
   });
-  ssdp.logger = self.options.logger;
+  ssdp.logger = self.logger;
 
   ssdp.server('0.0.0.0');
-  setInterval(notify, 30 * 1000);
-  notify();
+  ssdp.sock.on('listening', function() {
+    setInterval(notify, 30 * 1000);
+    notify();
+  });
 };
 
 
@@ -94,7 +96,7 @@ SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* js
 
   var self = this;
 
-  if (!this.sock) return;
+  if (!self.listening) return;
 
   Object.keys(self.usns).forEach(function (usn) {
     var bcast, mask, quad0;

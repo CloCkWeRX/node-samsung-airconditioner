@@ -1,4 +1,4 @@
-var API = require('./samsung-airconditioner').API;
+var API = require('./samsung-discovery');
 
 new API().on('discovery', function(aircon) {
   aircon.login(function(err, token) {
