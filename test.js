@@ -1,6 +1,6 @@
 var API = require('./samsung-discovery');
 
-new API().on('discovery', function(aircon) {
+new API().on('discover', function(aircon) {
   aircon.login(function(err, token) {
     if (!!err) return console.log('login error: ' + err.message);
 
