@@ -14,12 +14,15 @@
     "url"          : "https://github.com/CloCkWeRX/node-samsung-airconditioner/issues"
   }
 , "keywords"       : [ "Samsung", "Air Conditioner" ]
-, "main"           : "./samsung-airconditioner.js"
+, "main"           : "./samsung-discovery.js"
 , "engines"        : {
     "node"         : ">=0.8"
   }
 , "readmeFilename" : "README.md"
-, "dependencies": {
-    "carrier": ">= 0.1.0"
+, "dependencies"   : {
+    "carrier"      : ">= 0.1.0"
+  , "netmask"      : "1.0.4"
+  , "node-ssdp"    : "git://github.com/TheThingSystem/node-ssdp.git"
+  , "xml2json"     : "0.3.2"
   }
 }
