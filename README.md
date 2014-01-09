@@ -24,16 +24,14 @@ API
       console.log('discovery error: ' + err.message);
     });
 
-### Login
+### Get Token
 
-      // if the caller already has a token associated with aircon.props.duid, then supply it, else null
+You need to physically authenticate with the aircon during your first setup.
 
-      aircon.login(token, function(err, token) {
+      aircon.get_token(function(err, token) {
         if (!!err) return console.log('login error: ' + err.message);
 
         // remember token for next time!
-
-        // now drive the aircon!
       }).on('waiting', function() {
         console.log('please power on the device within the next 30 seconds');
       }).on('end', function() {
@@ -41,6 +39,18 @@ API
       }).on('err', function(err) {
         console.log('aircon error: ' + err.message);
       });
+
+### Login
+
+Have a token? This time connect.
+
+      aircon.login(token, function(err) {
+        if (!!err) return console.log('login error: ' + err.message);
+
+        // Drive the aircon!
+        aircon.onoff(true);
+      });
+
 
 #### Drive the aircon after logging in
 
