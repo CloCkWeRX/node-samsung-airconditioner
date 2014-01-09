@@ -97,21 +97,23 @@ SamsungAirconditioner.prototype._send = function(xml) {
 // Public API
 
 SamsungAirconditioner.prototype.login = function(token, callback) {
+  var self = this;
+
+  self.token = token;
+  self._connect();
+
+  setTimeout(function() { callback(null, null); }, 0);
+  return self;
+}
+
+SamsungAirconditioner.prototype.get_token = function(callback) {
   var socket;
 
   var self = this;
 
-  if (typeof token === 'function') {
-    callback = token;
-    token = null;
-  }
-  if (typeof callback !== 'function') throw new Error('callback is mandatory for login');
+  if (typeof callback !== 'function') throw new Error('callback is mandatory for get_token');
 
-  if (!!token) {
-    self._connect();
-    setTimeout(function() { callback(null, null); }, 0);
-    return self;
-  }
+
 
   socket = tls.connect({port: 2878, host: self.options.ip, rejectUnauthorized: false }, function() {  
     var n = 0;
@@ -120,21 +122,32 @@ SamsungAirconditioner.prototype.login = function(token, callback) {
 
     socket.setEncoding('utf8');
     carrier.carry(socket, function(line) {
-      if (n++ < 2) {
-        if (n < 2) return;
+      self.logger.debug('read', line);
+      if (line == 'DRC-1.00')   {
+        return;
+      }
 
-/* write the line that requests the token */
+      if (line == '<?xml version="1.0" encoding="utf-8" ?><Update Type="InvalidateAccount"/>') {
+        return socket.write('<Request Type="GetToken" />' + "\r\n");
+      }
 
+      if (line == '<?xml version="1.0" encoding="utf-8" ?><Response Type="GetToken" Status="Ready"/>') {
         return self.emit('waiting');
       }
-      
-      try { socket.close(); } catch(ex) {}
 
-/* examine the line that contains the result */
-      if (true /* error */) return callback(new Error('...'));
+      /* examine the line that contains the result */
+      if (line == '<?xml version="1.0" encoding="utf-8" ?><Response Status="Fail" Type="Authenticate" ErrorCode="301" />') {
+         return callback(new Error('Failed authentication'));
+      }
 
-      self.token = '...';
-      callback(null, self.token);
+      var matches = line.match(/Token="(.*)"/)
+      if (matches) {
+         self.emit('authenticated');
+        self.token =  matches[1];
+        callback(null, self.token);
+      }
+
+
     });
   }).on('end', function() {
     if (!self.token) callback(new Error('premature eof'));
