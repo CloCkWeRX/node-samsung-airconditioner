@@ -70,9 +70,15 @@ Have a token? This time connect.
 #### Responding to manual changes or confirming your changes
 
     new API().on('discover', function(aircon) {
-      // now login!
-    }).on('stateChange', function(state) {
-      console.log(state);
+      aircon.login(token, function(err) {
+        if (!!err) return console.log('login error: ' + err.message);
+
+        // Drive the aircon!
+        aircon.onoff(true);
+      }).on('stateChange', function(state) {
+        // Responses, or user triggered state changes
+        console.log(state);
+      });
     });
 
 The air conditioner can be changed quite rapidly by a person with the physical controls or remote.
