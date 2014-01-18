@@ -65,3 +65,50 @@ Have a token? This time connect.
                                          // 'windmode1', 'windmode2', 'windmode3'
 
     aircon.sleep_mode(hours);
+
+
+#### Responding to manual changes or confirming your changes
+
+    new API().on('discover', function(aircon) {
+      // now login!
+    }).on('stateChange', function(state) {
+      console.log(state);
+    });
+
+The air conditioner can be changed quite rapidly by a person with the physical controls or remote.
+For example, in about a minute the following were generated
+
+
+  "AC_FUN_POWER": "On"
+  "AC_FUN_OPMODE": "Cool" 
+  "AC_FUN_TEMPSET": "24"
+  "AC_FUN_OPMODE": "Dry"
+  "AC_FUN_OPMODE": "Wind"
+  "AC_FUN_WINDLEVEL": "Low"
+  "AC_FUN_OPMODE": "Heat"
+  "AC_FUN_WINDLEVEL": "Auto"
+  "AC_FUN_OPMODE": "Auto" 
+  "AC_FUN_TEMPSET": "23" 
+  "AC_ADD_SPI": "On" 
+  "AC_ADD_AUTOCLEAN": "On" 
+  "AC_FUN_TEMPNOW": "28" 
+  "AC_FUN_POWER": "Off" 
+  "AC_FUN_POWER": "On" 
+  "AC_ADD_SPI": "Off" 
+  "AC_FUN_OPMODE": "Cool" 
+  "AC_FUN_TEMPSET": "24" 
+  "AC_FUN_DIRECTION": "SwingUD" 
+  "AC_FUN_COMODE": "Smart" 
+  "AC_FUN_DIRECTION": "Fixed" 
+  "AC_FUN_COMODE": "Quiet" 
+  "AC_FUN_DIRECTION": "SwingUD" 
+  "AC_FUN_DIRECTION": "Rotation" 
+  "AC_FUN_COMODE": "Off" 
+  "AC_FUN_OPMODE": "Dry" 
+  "AC_FUN_OPMODE": "Wind" 
+  "AC_FUN_WINDLEVEL": "Low" 
+  "AC_FUN_WINDLEVEL": "Mid" 
+  "AC_FUN_WINDLEVEL": "Low" 
+  "AC_FUN_WINDLEVEL": "Mid" 
+  "AC_FUN_WINDLEVEL": "Low" 
+  "AC_FUN_POWER": "Off"
