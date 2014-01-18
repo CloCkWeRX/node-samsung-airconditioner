@@ -189,7 +189,7 @@ SamsungAirconditioner.prototype.off = function() {
 };
 
 SamsungAirconditioner.prototype.mode = function(type) {
-  var i, lmodes;
+  var i, lmodes = [];
 
   var modes = ['Auto', 'Cool', 'Dry', 'Wind', 'Heat']
     , self  = this
@@ -207,7 +207,7 @@ SamsungAirconditioner.prototype.set_temperature = function(temp) {
 };  
 
 SamsungAirconditioner.prototype.set_convenient_mode = function(mode) {
-  var i, lmodes;
+  var i, lmodes = [];
 
   var modes = ['Off', 'Quiet', 'Sleep', 'Smart', 'SoftCool', 'TurboMode', 'WindMode1', 'WindMode2', 'WindMode3']
     , self  = this
