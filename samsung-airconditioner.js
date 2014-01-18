@@ -55,6 +55,16 @@ SamsungAirconditioner.prototype._connect = function() {
      
       self.logger.debug('read', { line: line });
 
+      // Other events
+      if (line.match(/Update Type="Status"/)) {
+        if (matches = line.match(/Attr ID="(.*)" Value="(.*)"/)) {
+          var state = {};
+          state[matches[1]] = matches[2];
+
+          self.emit('stateChange', state);
+        }
+      }
+
 /* extract CommandID into and then... */
       if (!self.callbacks[id]) return;
       callback = self.callbacks[id];
@@ -123,7 +133,7 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
     socket.setEncoding('utf8');
     carrier.carry(socket, function(line) {
       self.logger.debug('read', line);
-      if (line == 'DRC-1.00')   {
+      if (line == 'DRC-1.00') {
         return;
       }
 
@@ -144,7 +154,18 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
       if (matches) {
          self.emit('authenticated');
         self.token =  matches[1];
-        callback(null, self.token);
+        return callback(null, self.token);
+      }
+
+
+      // Other events
+      if (line.match(/Update Type="Status"/)) {
+        if (matches = line.match(/Attr ID="(.*)" Value="(.*)"/)) {
+          var state = {};
+          state[matches[1]] = matches[2];
+
+          self.emit('stateChange', state);
+        }
       }
 
 
@@ -205,7 +226,7 @@ SamsungAirconditioner.prototype.get_temperature = function(callback) {
     var celcius;
 
     if (!!err) callback(err);
-
+console.log(line);
 /* parse line and invoke */
      callback(null, celcius);
   });
