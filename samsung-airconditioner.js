@@ -64,6 +64,21 @@ SamsungAirconditioner.prototype._connect = function() {
           self.emit('stateChange', state);
         }
       }
+      
+      if (line.match(/Response Type="DeviceState" Status="Okay"/)) {
+          var state = {};
+
+          // line = '<Device DUID="7825AD103D06" GroupID="AC" ModelID="AC" ><Attr ID="AC_FUN_ENABLE" Type="RW" Value="Enable"/><Attr ID="AC_FUN_POWER" Type="RW" Value="Off"/><Attr ID="AC_FUN_SUPPORTED" Type="R" Value="0"/><Attr ID="AC_FUN_OPMODE" Type="RW" Value="NotSupported"/><Attr ID="AC_FUN_TEMPSET" Type="RW" Value="24"/><Attr ID="AC_FUN_COMODE" Type="RW" Value="Off"/><Attr ID="AC_FUN_ERROR" Type="RW" Value="00000000"/><Attr ID="AC_FUN_TEMPNOW" Type="R" Value="29"/><Attr ID="AC_FUN_SLEEP" Type="RW" Value="0"/><Attr ID="AC_FUN_WINDLEVEL" Type="RW" Value="High"/><Attr ID="AC_FUN_DIRECTION" Type="RW" Value="Fixed"/><Attr ID="AC_ADD_AUTOCLEAN" Type="RW" Value="Off"/><Attr ID="AC_ADD_APMODE_END" Type="W" Value="0"/><Attr ID="AC_ADD_STARTWPS" Type="RW" Value="Direct"/><Attr ID="AC_ADD_SPI" Type="RW" Value="Off"/><Attr ID="AC_SG_WIFI" Type="W" Value="Connected"/><Attr ID="AC_SG_INTERNET" Type="W" Value="Connected"/><Attr ID="AC_ADD2_VERSION" Type="RW" Value="0"/><Attr ID="AC_SG_MACHIGH" Type="W" Value="0"/><Attr ID="AC_SG_MACMID" Type="W" Value="0"/><Attr ID="AC_SG_MACLOW" Type="W" Value="0"/><Attr ID="AC_SG_VENDER01" Type="W" Value="0"/><Attr ID="AC_SG_VENDER02" Type="W" Value="0"/><Attr ID="AC_SG_VENDER03" Type="W" Value="0"/></Device>'
+
+          var attributes = line.split("><");
+          attributes.forEach(function(attr) {
+            if (matches = attr.match(/Attr ID="(.*)" Type=".*" Value="(.*)"/)) {
+              state[matches[1]] = matches[2];
+            }
+          });
+
+          self.emit('stateChange', state);
+      }
 
 /* extract CommandID into and then... */
       if (!self.callbacks[id]) return;
@@ -168,6 +183,21 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
         }
       }
 
+      if (line.match(/Response Type="DeviceState" Status="Okay"/)) {
+          var state = {};
+
+          // line = '<Device DUID="7825AD103D06" GroupID="AC" ModelID="AC" ><Attr ID="AC_FUN_ENABLE" Type="RW" Value="Enable"/><Attr ID="AC_FUN_POWER" Type="RW" Value="Off"/><Attr ID="AC_FUN_SUPPORTED" Type="R" Value="0"/><Attr ID="AC_FUN_OPMODE" Type="RW" Value="NotSupported"/><Attr ID="AC_FUN_TEMPSET" Type="RW" Value="24"/><Attr ID="AC_FUN_COMODE" Type="RW" Value="Off"/><Attr ID="AC_FUN_ERROR" Type="RW" Value="00000000"/><Attr ID="AC_FUN_TEMPNOW" Type="R" Value="29"/><Attr ID="AC_FUN_SLEEP" Type="RW" Value="0"/><Attr ID="AC_FUN_WINDLEVEL" Type="RW" Value="High"/><Attr ID="AC_FUN_DIRECTION" Type="RW" Value="Fixed"/><Attr ID="AC_ADD_AUTOCLEAN" Type="RW" Value="Off"/><Attr ID="AC_ADD_APMODE_END" Type="W" Value="0"/><Attr ID="AC_ADD_STARTWPS" Type="RW" Value="Direct"/><Attr ID="AC_ADD_SPI" Type="RW" Value="Off"/><Attr ID="AC_SG_WIFI" Type="W" Value="Connected"/><Attr ID="AC_SG_INTERNET" Type="W" Value="Connected"/><Attr ID="AC_ADD2_VERSION" Type="RW" Value="0"/><Attr ID="AC_SG_MACHIGH" Type="W" Value="0"/><Attr ID="AC_SG_MACMID" Type="W" Value="0"/><Attr ID="AC_SG_MACLOW" Type="W" Value="0"/><Attr ID="AC_SG_VENDER01" Type="W" Value="0"/><Attr ID="AC_SG_VENDER02" Type="W" Value="0"/><Attr ID="AC_SG_VENDER03" Type="W" Value="0"/></Device>'
+
+          var attributes = line.split("><");
+          attributes.forEach(function(attr) {
+            if (matches = attr.match(/Attr ID="(.*)" Type=".*" Value="(.*)"/)) {
+              state[matches[1]] = matches[2];
+            }
+          });
+
+          self.emit('stateChange', state);
+      }
+
 
     });
   }).on('end', function() {
@@ -197,7 +227,7 @@ SamsungAirconditioner.prototype.mode = function(type) {
 
   if (!lmodes) for (i = 0; i < modes.length; i++) lmodes.push(modes[i].toLowerCase());
   i = lmodes.indexOf(type.toLowerCase());
-  if (i === -1) throw new Error("Invalid mode");
+  if (i === -1) throw new Error("Invalid mode: " + type);
 
   return self._device_control('AC_FUN_OPMODE', modes[i]);
 };
@@ -215,7 +245,7 @@ SamsungAirconditioner.prototype.set_convenient_mode = function(mode) {
 
   if (!lmodes) for (i = 0; i < modes.length; i++) lmodes.push(modes[i].toLowerCase());
   i = lmodes.indexOf(mode.toLowerCase());
-  if (i === -1) throw new Error("Invalid mode");
+  if (i === -1) throw new Error("Invalid mode: " + mode);
 
   return self._device_control('AC_FUN_COMODE', mode);
 };
@@ -226,7 +256,7 @@ SamsungAirconditioner.prototype.get_temperature = function(callback) {
     var celcius;
 
     if (!!err) callback(err);
-console.log(line);
+
 /* parse line and invoke */
      callback(null, celcius);
   });
@@ -236,6 +266,10 @@ SamsungAirconditioner.prototype.sleep_mode = function(hours) {
   return this._device_control('AC_FUN_SLEEP', hours);
 };
 
+SamsungAirconditioner.prototype.status = function() {
+  var self = this;
+  return self._send('<Request Type="DeviceState" DUID="' + self.options.duid+ '"></Request>');
+};
 
 
 /*
