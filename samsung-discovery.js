@@ -1,4 +1,5 @@
 /*jslint node: true */
+"use strict";
 var Emitter        = require('events').EventEmitter, 
     os             = require('os'), 
     util           = require('util'), 
@@ -47,7 +48,11 @@ var SamsungDiscovery = function(options) {
     for (ifa = 0; ifa < ifaddrs.length; ifa++) {
       if ((ifaddrs[ifa].internal) || (ifaddrs[ifa].family !== 'IPv4')) continue;
 
-      self.logger.info('listening', { interface: ifname, ipaddr: ifaddrs[ifa].address, portno: 1900 });
+      self.logger.info('listening', { 
+        network_interface: ifname, 
+        ipaddr: ifaddrs[ifa].address, 
+        portno: 1900 
+      });
       self.listen(ifname, ifaddrs[ifa].address, 1900);
     }
   }
