@@ -128,7 +128,11 @@ SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* js
 
 // TBD: use the (obsolete) class A/B/C netmasks
     bcast = new netmask.Netmask(ipaddr + '/' + mask).broadcast;
-    self.logger.info('multicasting', { interface: ifname, ipaddr: bcast, portno: 1900 });
+    self.logger.info('multicasting', { 
+      network_interface: ifname, 
+      ipaddr: bcast, 
+      portno: 1900 
+    });
 
     out = new Buffer(out);
     self.sock.setBroadcast(true);
