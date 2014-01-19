@@ -3,6 +3,8 @@ node-samsung-airconditioner
 
 A node.js module to interface with Samsung SMART Airconditioners
 
+[![Build Status](https://travis-ci.org/CloCkWeRX/node-samsung-airconditioner.png?branch=master)](https://travis-ci.org/CloCkWeRX/node-samsung-airconditioner)
+
 Install
 -------
 
