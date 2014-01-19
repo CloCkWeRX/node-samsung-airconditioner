@@ -73,14 +73,15 @@ Have a token? This time connect.
       aircon.login(token, function(err) {
         if (!!err) return console.log('login error: ' + err.message);
 
+      }).on('stateChange', function(state) {
+        // Responses, or user triggered state changes
+        console.log(state);
+      }).on('loginSuccess', function () {
         // Get current status
         aircon.status();
 
         // Drive the aircon!
         aircon.onoff(true);
-      }).on('stateChange', function(state) {
-        // Responses, or user triggered state changes
-        console.log(state);
       });
     });
 
