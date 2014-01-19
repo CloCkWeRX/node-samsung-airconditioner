@@ -26,6 +26,6 @@
   , "xml2json"     : "0.3.2"
   }
 , "devDependencies": {
-  , "jshint"       : "0.9.1"
+   "jshint"       : "0.9.1"
   }
 }
