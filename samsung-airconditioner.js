@@ -230,7 +230,7 @@ SamsungAirconditioner.prototype.mode = function(type) {
     , self  = this
     ;
 
-  for (i = 0; i < modes.length; i++) lmodes[i] = modes[i].toLowerCase());
+  for (i = 0; i < modes.length; i++) lmodes[i] = modes[i].toLowerCase();
   i = lmodes.indexOf(type.toLowerCase());
   if (i === -1) throw new Error("Invalid mode: " + type);
 
@@ -248,7 +248,7 @@ SamsungAirconditioner.prototype.set_convenient_mode = function(mode) {
     , self  = this
     ;
 
-  for (i = 0; i < modes.length; i++) lmodes[i] = modes[i].toLowerCase());
+  for (i = 0; i < modes.length; i++) lmodes[i] = modes[i].toLowerCase();
   i = lmodes.indexOf(mode.toLowerCase());
   if (i === -1) throw new Error("Invalid mode: " + mode);
 
@@ -267,8 +267,8 @@ SamsungAirconditioner.prototype.get_temperature = function(callback) {
   });
 };
 
-SamsungAirconditioner.prototype.sleep_mode = function(hours) {
-  return this._device_control('AC_FUN_SLEEP', hours);
+SamsungAirconditioner.prototype.sleep_mode = function(minutes) {
+  return this._device_control('AC_FUN_SLEEP', minutes);
 };
 
 SamsungAirconditioner.prototype.status = function() {
