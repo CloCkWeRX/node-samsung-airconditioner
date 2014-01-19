@@ -53,9 +53,9 @@ SamsungAirconditioner.prototype._connect = function() {
         return self._send('<Request Type="AuthToken"><User Token="' + self.token + '" /></Request>');
       }
 
-      if (line.matches('/<Response Type="AuthToken" Status="Okay"/')) {
-         self.emit('logged_in');
-      }     
+      if (line.match('/<Response Type="AuthToken" Status="Okay"/')) {
+         self.emit('loggedSuccess');
+      }
 
       self.logger.debug('read', { line: line });
 
