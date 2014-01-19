@@ -52,7 +52,11 @@ SamsungAirconditioner.prototype._connect = function() {
       if (line === '<?xml version="1.0" encoding="utf-8" ?><Update Type="InvalidateAccount"/>') {
         return self._send('<Request Type="AuthToken"><User Token="' + self.token + '" /></Request>');
       }
-     
+
+      if (line.matches('/<Response Type="AuthToken" Status="Okay"/')) {
+         self.emit('logged_in');
+      }     
+
       self.logger.debug('read', { line: line });
 
       // Other events
@@ -64,7 +68,7 @@ SamsungAirconditioner.prototype._connect = function() {
           self.emit('stateChange', state);
         }
       }
-      
+
       if (line.match(/Response Type="DeviceState" Status="Okay"/)) {
           var state = {};
 
@@ -164,6 +168,7 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
       if (line == '<?xml version="1.0" encoding="utf-8" ?><Response Status="Fail" Type="Authenticate" ErrorCode="301" />') {
          return callback(new Error('Failed authentication'));
       }
+
 
       var matches = line.match(/Token="(.*)"/)
       if (matches) {
