@@ -25,4 +25,7 @@
   , "node-ssdp"    : "git://github.com/TheThingSystem/node-ssdp.git"
   , "xml2json"     : "0.3.2"
   }
+, "devDependencies": {
+   "jshint"       : "0.9.1"
+  }
 }

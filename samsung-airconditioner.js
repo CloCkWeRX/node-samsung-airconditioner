@@ -1,16 +1,16 @@
-var events  = require('events')
-  , util    = require('util')
-  , tls     = require('tls')
-  , carrier = require('carrier')
-  ;
+var events  = require('events'), 
+    util    = require('util'), 
+    tls     = require('tls'), 
+    carrier = require('carrier');
 
 
-var DEFAULT_LOGGER = { error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); }
-                     , warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     , notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     , info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     , debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     };
+var DEFAULT_LOGGER = { 
+  error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); },
+  warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }, 
+  notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }, 
+  info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
+  debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }                     
+};
 
 
 var SamsungAirconditioner = function(options) {
@@ -43,7 +43,7 @@ SamsungAirconditioner.prototype._connect = function() {
 
     self.socket.setEncoding('utf8');
     carrier.carry(self.socket, function(line) {
-      var callback, id;
+      var callback, id, state;
 
       if (line === 'DRC-1.00') {
         return;
@@ -61,8 +61,8 @@ SamsungAirconditioner.prototype._connect = function() {
 
       // Other events
       if (line.match(/Update Type="Status"/)) {
-        if (matches = line.match(/Attr ID="(.*)" Value="(.*)"/)) {
-          var state = {};
+        if ((matches = line.match(/Attr ID="(.*)" Value="(.*)"/))) {
+          state = {};
           state[matches[1]] = matches[2];
 
           self.emit('stateChange', state);
@@ -70,13 +70,13 @@ SamsungAirconditioner.prototype._connect = function() {
       }
 
       if (line.match(/Response Type="DeviceState" Status="Okay"/)) {
-          var state = {};
+          state = {};
 
           // line = '<Device DUID="7825AD103D06" GroupID="AC" ModelID="AC" ><Attr ID="AC_FUN_ENABLE" Type="RW" Value="Enable"/><Attr ID="AC_FUN_POWER" Type="RW" Value="Off"/><Attr ID="AC_FUN_SUPPORTED" Type="R" Value="0"/><Attr ID="AC_FUN_OPMODE" Type="RW" Value="NotSupported"/><Attr ID="AC_FUN_TEMPSET" Type="RW" Value="24"/><Attr ID="AC_FUN_COMODE" Type="RW" Value="Off"/><Attr ID="AC_FUN_ERROR" Type="RW" Value="00000000"/><Attr ID="AC_FUN_TEMPNOW" Type="R" Value="29"/><Attr ID="AC_FUN_SLEEP" Type="RW" Value="0"/><Attr ID="AC_FUN_WINDLEVEL" Type="RW" Value="High"/><Attr ID="AC_FUN_DIRECTION" Type="RW" Value="Fixed"/><Attr ID="AC_ADD_AUTOCLEAN" Type="RW" Value="Off"/><Attr ID="AC_ADD_APMODE_END" Type="W" Value="0"/><Attr ID="AC_ADD_STARTWPS" Type="RW" Value="Direct"/><Attr ID="AC_ADD_SPI" Type="RW" Value="Off"/><Attr ID="AC_SG_WIFI" Type="W" Value="Connected"/><Attr ID="AC_SG_INTERNET" Type="W" Value="Connected"/><Attr ID="AC_ADD2_VERSION" Type="RW" Value="0"/><Attr ID="AC_SG_MACHIGH" Type="W" Value="0"/><Attr ID="AC_SG_MACMID" Type="W" Value="0"/><Attr ID="AC_SG_MACLOW" Type="W" Value="0"/><Attr ID="AC_SG_VENDER01" Type="W" Value="0"/><Attr ID="AC_SG_VENDER02" Type="W" Value="0"/><Attr ID="AC_SG_VENDER03" Type="W" Value="0"/></Device>'
 
           var attributes = line.split("><");
           attributes.forEach(function(attr) {
-            if (matches = attr.match(/Attr ID="(.*)" Type=".*" Value="(.*)"/)) {
+            if ((matches = attr.match(/Attr ID="(.*)" Type=".*" Value="(.*)"/))) {
               state[matches[1]] = matches[2];
             }
           });
@@ -109,8 +109,9 @@ SamsungAirconditioner.prototype._device_control = function(key, value, callback)
   id = Math.round(Math.random() * 10000);
   if (!!callback) self.callbacks[id] = callback;
 
-  return self._send('<Request Type="DeviceControl"><Control CommandID="cmd' + id + '" DUID="' + self.options.duid
-                    + '"><Attr ID="' + key + '" Value="' + value + '" /></Control></Request>');
+  return self._send(
+    '<Request Type="DeviceControl"><Control CommandID="cmd' + id + '" DUID="' + self.options.duid + '"><Attr ID="' + key + '" Value="' + value + '" /></Control></Request>'
+  );
 };
 
 SamsungAirconditioner.prototype._send = function(xml) {
@@ -133,7 +134,7 @@ SamsungAirconditioner.prototype.login = function(token, callback) {
 
   setTimeout(function() { callback(null, null); }, 0);
   return self;
-}
+};
 
 SamsungAirconditioner.prototype.get_token = function(callback) {
   var socket;
@@ -145,7 +146,7 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
 
 
   socket = tls.connect({port: 2878, host: self.options.ip, rejectUnauthorized: false }, function() {  
-    var n = 0;
+    var n = 0, state;
 
     self.logger.info('connected', { ipaddr: self.options.ip, port: 2878, tls: true });
 
@@ -170,7 +171,7 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
       }
 
 
-      var matches = line.match(/Token="(.*)"/)
+      var matches = line.match(/Token="(.*)"/);
       if (matches) {
          self.emit('authenticated');
         self.token =  matches[1];
@@ -180,8 +181,8 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
 
       // Other events
       if (line.match(/Update Type="Status"/)) {
-        if (matches = line.match(/Attr ID="(.*)" Value="(.*)"/)) {
-          var state = {};
+        if ((matches = line.match(/Attr ID="(.*)" Value="(.*)"/))) {
+          state = {};
           state[matches[1]] = matches[2];
 
           self.emit('stateChange', state);
@@ -189,13 +190,13 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
       }
 
       if (line.match(/Response Type="DeviceState" Status="Okay"/)) {
-          var state = {};
+          state = {};
 
           // line = '<Device DUID="7825AD103D06" GroupID="AC" ModelID="AC" ><Attr ID="AC_FUN_ENABLE" Type="RW" Value="Enable"/><Attr ID="AC_FUN_POWER" Type="RW" Value="Off"/><Attr ID="AC_FUN_SUPPORTED" Type="R" Value="0"/><Attr ID="AC_FUN_OPMODE" Type="RW" Value="NotSupported"/><Attr ID="AC_FUN_TEMPSET" Type="RW" Value="24"/><Attr ID="AC_FUN_COMODE" Type="RW" Value="Off"/><Attr ID="AC_FUN_ERROR" Type="RW" Value="00000000"/><Attr ID="AC_FUN_TEMPNOW" Type="R" Value="29"/><Attr ID="AC_FUN_SLEEP" Type="RW" Value="0"/><Attr ID="AC_FUN_WINDLEVEL" Type="RW" Value="High"/><Attr ID="AC_FUN_DIRECTION" Type="RW" Value="Fixed"/><Attr ID="AC_ADD_AUTOCLEAN" Type="RW" Value="Off"/><Attr ID="AC_ADD_APMODE_END" Type="W" Value="0"/><Attr ID="AC_ADD_STARTWPS" Type="RW" Value="Direct"/><Attr ID="AC_ADD_SPI" Type="RW" Value="Off"/><Attr ID="AC_SG_WIFI" Type="W" Value="Connected"/><Attr ID="AC_SG_INTERNET" Type="W" Value="Connected"/><Attr ID="AC_ADD2_VERSION" Type="RW" Value="0"/><Attr ID="AC_SG_MACHIGH" Type="W" Value="0"/><Attr ID="AC_SG_MACMID" Type="W" Value="0"/><Attr ID="AC_SG_MACLOW" Type="W" Value="0"/><Attr ID="AC_SG_VENDER01" Type="W" Value="0"/><Attr ID="AC_SG_VENDER02" Type="W" Value="0"/><Attr ID="AC_SG_VENDER03" Type="W" Value="0"/></Device>'
 
           var attributes = line.split("><");
           attributes.forEach(function(attr) {
-            if (matches = attr.match(/Attr ID="(.*)" Type=".*" Value="(.*)"/)) {
+            if ((matches = attr.match(/Attr ID="(.*)" Type=".*" Value="(.*)"/))) {
               state[matches[1]] = matches[2];
             }
           });
@@ -226,9 +227,8 @@ SamsungAirconditioner.prototype.off = function() {
 SamsungAirconditioner.prototype.mode = function(type) {
   var i, lmodes = [];
 
-  var modes = ['Auto', 'Cool', 'Dry', 'Wind', 'Heat']
-    , self  = this
-    ;
+  var modes = ['Auto', 'Cool', 'Dry', 'Wind', 'Heat'], 
+      self  = this;
 
   for (i = 0; i < modes.length; i++) lmodes[i] = modes[i].toLowerCase();
   i = lmodes.indexOf(type.toLowerCase());
@@ -244,9 +244,8 @@ SamsungAirconditioner.prototype.set_temperature = function(temp) {
 SamsungAirconditioner.prototype.set_convenient_mode = function(mode) {
   var i, lmodes = [];
 
-  var modes = ['Off', 'Quiet', 'Sleep', 'Smart', 'SoftCool', 'TurboMode', 'WindMode1', 'WindMode2', 'WindMode3']
-    , self  = this
-    ;
+  var modes = ['Off', 'Quiet', 'Sleep', 'Smart', 'SoftCool', 'TurboMode', 'WindMode1', 'WindMode2', 'WindMode3'], 
+      self  = this;
 
   for (i = 0; i < modes.length; i++) lmodes[i] = modes[i].toLowerCase();
   i = lmodes.indexOf(mode.toLowerCase());

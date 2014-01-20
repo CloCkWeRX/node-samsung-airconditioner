@@ -1,18 +1,20 @@
-var Emitter        = require('events').EventEmitter
-  , os             = require('os')
-  , util           = require('util')
-  , SSDP           = require('node-ssdp')
-  , netmask        = require('netmask')
-  , Device         = require('./samsung-airconditioner')
-  ;
+/*jslint node: true */
+"use strict";
+var Emitter        = require('events').EventEmitter, 
+    os             = require('os'), 
+    util           = require('util'), 
+    SSDP           = require('node-ssdp'), 
+    netmask        = require('netmask'), 
+    Device         = require('./samsung-airconditioner');
 
 
-var DEFAULT_LOGGER = { error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); }
-                     , warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     , notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     , info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     , debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                     };
+var DEFAULT_LOGGER = { 
+  error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); }, 
+  warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }, 
+  notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }, 
+  info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }, 
+  debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
+};
 
 
 var SamsungDiscovery = function(options) {
@@ -33,10 +35,12 @@ var SamsungDiscovery = function(options) {
 
   ifaces = os.networkInterfaces();
   for (ifname in ifaces) {
-    if ((!ifaces.hasOwnProperty(ifname))
-          || (ifname.indexOf('vmnet') === 0)
-          || (ifname.indexOf('vnic') === 0)
-          || (ifname.indexOf('tun') !== -1)) continue;
+    if ((!ifaces.hasOwnProperty(ifname)) || 
+        (ifname.indexOf('vmnet') === 0)  || 
+        (ifname.indexOf('vnic') === 0)   || 
+        (ifname.indexOf('tun') !== -1)) {
+      continue;
+    }
 
     ifaddrs = ifaces[ifname];
     if (ifaddrs.length === 0) continue;
@@ -44,7 +48,11 @@ var SamsungDiscovery = function(options) {
     for (ifa = 0; ifa < ifaddrs.length; ifa++) {
       if ((ifaddrs[ifa].internal) || (ifaddrs[ifa].family !== 'IPv4')) continue;
 
-      self.logger.info('listening', { interface: ifname, ipaddr: ifaddrs[ifa].address, portno: 1900 });
+      self.logger.info('listening', { 
+        network_interface: ifname, 
+        ipaddr: ifaddrs[ifa].address, 
+        portno: 1900 
+      });
       self.listen(ifname, ifaddrs[ifa].address, 1900);
     }
   }
@@ -59,10 +67,12 @@ SamsungDiscovery.prototype.listen = function(ifname, ipaddr, portno) {
                 { SPEC_VER: 'MSpec-1.00', SERVICE_NAME: 'ControlServer-MLib', MESSAGE_TYPE: 'CONTROLLER_START' });
   };
 
-  var ssdp = new SSDP({ addMembership     : false
-                      , responsesOnly     : true
-                      , multicastLoopback : false
-                      , noAdvertisements  : true }).on('response', function(msg, rinfo) {
+  var ssdp = new SSDP({
+    addMembership     : false, 
+    responsesOnly     : true,
+    multicastLoopback : false,
+    noAdvertisements  : true
+  }).on('response', function(msg, rinfo) {
     var i, info, j, lines, mac;
 
     lines = msg.toString().split("\r\n");
@@ -74,11 +84,13 @@ SamsungDiscovery.prototype.listen = function(ifname, ipaddr, portno) {
     }
 
     mac = info.MAC_ADDR;
-    self.devices[mac] = new Device({ logger : self.logger
-                                   , ip     : rinfo.address
-                                   , duid   : mac
-                                   , info   : info
-                                   });
+    self.devices[mac] = new Device({ 
+      logger : self.logger,
+      ip     : rinfo.address,
+      duid   : mac,
+      info   : info
+    });
+
     self.emit('discover', self.devices[mac]);
   });
   ssdp.logger = self.logger;
@@ -101,13 +113,12 @@ SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* js
   Object.keys(self.usns).forEach(function (usn) {
     var bcast, mask, quad0;
 
-    var udn   = self.usns[usn]
-      , heads =
-        { HOST            : '239.255.255.250:1900'
-        , 'CACHE-CONTROL' : 'max-age=20'
-        , SERVER          : signature
-        }
-      ;
+    var udn   = self.usns[usn],
+        heads ={ 
+          HOST            : '239.255.255.250:1900', 
+          'CACHE-CONTROL' : 'max-age=20', 
+          SERVER          : signature
+        };
 
     out = self.getSSDPHeader('NOTIFY', heads);
     Object.keys(vars).forEach(function (n) { out += n + ': ' + vars[n] + '\r\n'; });
@@ -117,7 +128,11 @@ SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* js
 
 // TBD: use the (obsolete) class A/B/C netmasks
     bcast = new netmask.Netmask(ipaddr + '/' + mask).broadcast;
-    self.logger.info('multicasting', { interface: ifname, ipaddr: bcast, portno: 1900 });
+    self.logger.info('multicasting', { 
+      network_interface: ifname, 
+      ipaddr: bcast, 
+      portno: 1900 
+    });
 
     out = new Buffer(out);
     self.sock.setBroadcast(true);
