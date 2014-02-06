@@ -48,7 +48,7 @@ var SamsungDiscovery = function(options) {
     for (ifa = 0; ifa < ifaddrs.length; ifa++) {
       if ((ifaddrs[ifa].internal) || (ifaddrs[ifa].family !== 'IPv4')) continue;
 
-      self.logger.info('listening', { 
+      self.logger.debug('listening', { 
         network_interface: ifname, 
         ipaddr: ifaddrs[ifa].address, 
         portno: 1900 
@@ -128,7 +128,7 @@ SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* js
 
 // TBD: use the (obsolete) class A/B/C netmasks
     bcast = new netmask.Netmask(ipaddr + '/' + mask).broadcast;
-    self.logger.info('multicasting', { 
+    self.logger.debug('multicasting', { 
       network_interface: ifname, 
       ipaddr: bcast, 
       portno: 1900 
