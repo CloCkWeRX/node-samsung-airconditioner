@@ -37,6 +37,7 @@ var SamsungDiscovery = function(options) {
   for (ifname in ifaces) {
     if ((!ifaces.hasOwnProperty(ifname)) || 
         (ifname.indexOf('vmnet') === 0)  || 
+        (ifname.indexOf('vboxnet') === 0)  || 
         (ifname.indexOf('vnic') === 0)   || 
         (ifname.indexOf('tun') !== -1)) {
       continue;
