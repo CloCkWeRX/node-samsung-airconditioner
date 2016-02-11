@@ -2,7 +2,7 @@ var events  = require('events'),
     util    = require('util'), 
     tls     = require('tls'), 
     carrier = require('carrier');
-
+const fs = require('fs');
 
 var DEFAULT_LOGGER = { 
   error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); },
@@ -11,12 +11,13 @@ var DEFAULT_LOGGER = {
   info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
   debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }                     
 };
-
+NODE_DEBUG=tls;
 
 var SamsungAirconditioner = function(options) {
   var k;
 
   var self = this;
+  self.state = {};
 
   if (!(self instanceof SamsungAirconditioner)) return new SamsungAirconditioner(options);
 
@@ -35,10 +36,12 @@ util.inherits(SamsungAirconditioner, events.EventEmitter);
 
 SamsungAirconditioner.prototype._connect = function() {
   var self = this;
-
+console.log("connect");
   self.callbacks = {};
 
-  self.socket = tls.connect({port: 2878, host: self.options.ip, rejectUnauthorized: false }, function() {  
+
+
+  self.socket = tls.connect({pfx: fs.readFileSync('./node_modules/samsung-airconditioner/ac14k_m.pfx'), port: 2878, host: self.options.ip, rejectUnauthorized: false }, function() {  
     self.logger.info('connected', { ipaddr: self.options.ip, port: 2878, tls: true });
 
     self.socket.setEncoding('utf8');
@@ -144,8 +147,8 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
   if (typeof callback !== 'function') throw new Error('callback is mandatory for get_token');
 
 
-
-  socket = tls.connect({port: 2878, host: self.options.ip, rejectUnauthorized: false }, function() {  
+	console.log("coonnecting to: " + self.options.ip);
+  socket = tls.connect({pfx: fs.readFileSync('./node_modules/samsung-airconditioner/ac14k_m.pfx'), port: 2878, host: self.options.ip, rejectUnauthorized: false }, function() {  
     var n = 0, state;
 
     self.logger.info('connected', { ipaddr: self.options.ip, port: 2878, tls: true });
@@ -182,8 +185,8 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
       // Other events
       if (line.match(/Update Type="Status"/)) {
         if ((matches = line.match(/Attr ID="(.*)" Value="(.*)"/))) {
-          state = {};
-          state[matches[1]] = matches[2];
+          
+          self.state[matches[1]] = matches[2];
 
           self.emit('stateChange', state);
         }
@@ -207,8 +210,9 @@ SamsungAirconditioner.prototype.get_token = function(callback) {
 
     });
   }).on('end', function() {
-    if (!self.token) callback(new Error('premature eof'));
+    if (!self.token) callback(new Error('premature disconnection'));
   }).on('error', function(err) {
+  	console.log(err);
     if (!self.token) callback(err);
   });
 
@@ -255,19 +259,12 @@ SamsungAirconditioner.prototype.set_convenient_mode = function(mode) {
 };
   
 
-SamsungAirconditioner.prototype.get_temperature = function(callback) {
-  return this._device_control('AC_FUN_TEMPNOW', '', function(err, line) {
-    var celcius;
-
-    if (!!err) callback(err);
-
-/* parse line and invoke */
-     callback(null, celcius);
-  });
-};
-
 SamsungAirconditioner.prototype.sleep_mode = function(minutes) {
   return this._device_control('AC_FUN_SLEEP', minutes);
+};
+
+SamsungAirconditioner.prototype.send_command = function(cmd,value) {
+  return this._device_control(cmd, value);
 };
 
 SamsungAirconditioner.prototype.status = function() {
