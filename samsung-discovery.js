@@ -3,9 +3,11 @@
 var Emitter        = require('events').EventEmitter, 
     os             = require('os'), 
     util           = require('util'), 
-    SSDP           = require('node-ssdp'), 
-    netmask        = require('netmask'), 
-    Device         = require('./samsung-airconditioner');
+    SSDP           = require('node-ssdp').Server, 
+    netmask        = require('netmask');
+    
+     
+var   Device         = require('./samsung-airconditioner');
 
 
 var DEFAULT_LOGGER = { 
@@ -73,10 +75,21 @@ SamsungDiscovery.prototype.listen = function(ifname, ipaddr, portno) {
     responsesOnly     : true,
     multicastLoopback : false,
     noAdvertisements  : true
-  }).on('response', function(msg, rinfo) {
-    var i, info, j, lines, mac;
+  });
+  
+  ssdp.logger = self.logger;
 
-    lines = msg.toString().split("\r\n");
+  ssdp.sock.on('listening', function() {
+  	self.logger.debug("listening.....");
+  	self.listening=true;
+    setInterval(notify, 30 * 1000);
+    notify();
+  });
+  
+  ssdp.sock.on('message', function(msg, rinfo) {
+  	var i, info, j, lines, mac;
+  	lines = msg.toString().split("\r\n");
+  
     info = {};
     for (i = 1; i < lines.length; i++) {
       j = lines[i].indexOf(':');
@@ -85,6 +98,9 @@ SamsungDiscovery.prototype.listen = function(ifname, ipaddr, portno) {
     }
 
     mac = info.MAC_ADDR;
+    if(!mac || info.MODELCODE != 'SAMSUNG_DEVICE')
+    	return;
+
     self.devices[mac] = new Device({ 
       logger : self.logger,
       ip     : rinfo.address,
@@ -94,31 +110,44 @@ SamsungDiscovery.prototype.listen = function(ifname, ipaddr, portno) {
 
     self.emit('discover', self.devices[mac]);
   });
-  ssdp.logger = self.logger;
+  ssdp.start();
+};
 
-  ssdp.server('0.0.0.0');
-  ssdp.sock.on('listening', function() {
-    setInterval(notify, 30 * 1000);
-    notify();
+SSDP.prototype.getSSDPHeader = function (head, vars, res) {
+  var ret = '';
+
+  if (res === null) res = false;
+
+  if (res) {
+    ret = "HTTP/1.1 " + head + "\r\n";
+  } else {
+    ret = head + " * HTTP/1.1\r\n";
+  }
+
+  Object.keys(vars).forEach(function (n) {
+    ret += n + ": " + vars[n] + "\r\n";
   });
+
+  return ret + "\r\n";
 };
 
 
-SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* jshint unused: false */
+SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {// jshint unused: false 
   var out;
 
   var self = this;
+	
+  //if (!self.listening) return;
 
-  if (!self.listening) return;
-
-  Object.keys(self.usns).forEach(function (usn) {
+  Object.keys(self._usns).forEach(function (usn) {
     var bcast, mask, quad0;
 
-    var udn   = self.usns[usn],
+    var udn   = self._usns[usn],
         heads ={ 
           HOST            : '239.255.255.250:1900', 
           'CACHE-CONTROL' : 'max-age=20', 
-          SERVER          : signature
+          SERVER          : signature,
+          LOCATION        : ipaddr
         };
 
     out = self.getSSDPHeader('NOTIFY', heads);
@@ -132,7 +161,8 @@ SSDP.prototype.notify = function(ifname, ipaddr, portno, signature, vars) {/* js
     self.logger.debug('multicasting', { 
       network_interface: ifname, 
       ipaddr: bcast, 
-      portno: 1900 
+      portno: 1900,
+      heads:out
     });
 
     out = new Buffer(out);

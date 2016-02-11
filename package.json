@@ -1,31 +1,34 @@
 {
-  "name"           : "samsung-airconditioner"
-, "version"        : "0.2.2"
-, "description"    : "node.js module for the Samsung smart samsung-airconditioners"
-, "author"         : {
-    "name"         : "Daniel O'Connor"
-  , "email"        : "daniel.oconnor@gmail.com"
-  }
-, "repository"     : {
-    "type"         : "git"
-  , "url"          : "https://github.com/CloCkWeRX/node-samsung-airconditioner.git"
-  } 
-, "bugs"           : {
-    "url"          : "https://github.com/CloCkWeRX/node-samsung-airconditioner/issues"
-  }
-, "keywords"       : [ "Samsung", "Air Conditioner" ]
-, "main"           : "./samsung-discovery.js"
-, "engines"        : {
-    "node"         : ">=0.8"
-  }
-, "readmeFilename" : "README.md"
-, "dependencies"   : {
-    "carrier"      : ">= 0.1.0"
-  , "netmask"      : "1.0.4"
-  , "node-ssdp"    : "git://github.com/TheThingSystem/node-ssdp.git"
-  , "xml2json"     : "0.3.2"
-  }
-, "devDependencies": {
-   "jshint"       : "0.9.1"
+  "name": "samsung-airconditioner",
+  "version": "0.2.3",
+  "description": "node.js module for the Samsung smart samsung-airconditioners",
+  "author": {
+    "name": "Daniel O'Connor",
+    "email": "daniel.oconnor@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CloCkWeRX/node-samsung-airconditioner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CloCkWeRX/node-samsung-airconditioner/issues"
+  },
+  "keywords": [
+    "Samsung",
+    "Air Conditioner"
+  ],
+  "main": "./samsung-discovery.js",
+  "engines": {
+    "node": ">=0.8"
+  },
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "carrier": ">= 0.1.0",
+    "netmask": "1.0.4",
+    "node-ssdp": "^2.7.0",
+    "xml2json": "^0.9.0"
+  },
+  "devDependencies": {
+    "jshint": "0.9.1"
   }
 }
