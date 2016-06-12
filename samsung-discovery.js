@@ -115,9 +115,6 @@ SamsungDiscovery.prototype.listen = function() {
     self.timer = setInterval(notify, 30 * 1000);
     notify();
   });
-  ssdp.on('error', function(e) {
-    console.log('Theres an error');
-  });
 };
 
 SamsungDiscovery.prototype.close = function() {
@@ -126,6 +123,7 @@ SamsungDiscovery.prototype.close = function() {
   if (self.ssdp) {
     self.ssdp.close();
     clearTimeout(self.timer);
+    delete self.timer;
     delete self.ssdp;
   }
 }
